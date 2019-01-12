@@ -9,12 +9,11 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-
 
 /**
  * The RobotMap is a mapping from the ports sensors and actuators are wired into
@@ -27,7 +26,7 @@ public class RobotMap {
 
   public static WPI_TalonSRX lFMaster;
   public static WPI_TalonSRX lFSlave;
-  
+
   public static WPI_TalonSRX rFMaster;
   public static WPI_TalonSRX rFSlave;
 
@@ -37,15 +36,35 @@ public class RobotMap {
   public static WPI_TalonSRX rBMaster;
   public static WPI_TalonSRX rBSlave;
 
-
   public static SpeedControllerGroup leftMaster;
   public static SpeedControllerGroup rightMaster;
 
   public static DifferentialDrive driveTank;
 
-  public static void init()
-  {
+  public static void init() {
     testMotor = new WPI_TalonSRX(Constants.MOTOR1VAL);
+
+    /* Config sensor used for Primary PID [Velocity] */
+    testMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.kPIDLoopIdx,
+        Constants.kTimeoutMs);
+
+    /**
+     * Phase sensor accordingly. Positive Sensor Reading should match Green
+     * (blinking) Leds on Talon
+     */
+    testMotor.setSensorPhase(true);
+
+    /* Config the peak and nominal outputs */
+    testMotor.configNominalOutputForward(0, Constants.kTimeoutMs);
+    testMotor.configNominalOutputReverse(0, Constants.kTimeoutMs);
+    testMotor.configPeakOutputForward(1, Constants.kTimeoutMs);
+    testMotor.configPeakOutputReverse(-1, Constants.kTimeoutMs);
+
+    /* Config the Velocity closed loop gains in slot0 */
+    testMotor.config_kF(Constants.kPIDLoopIdx, Constants.kF, Constants.kTimeoutMs);
+    testMotor.config_kP(Constants.kPIDLoopIdx, Constants.kP, Constants.kTimeoutMs);
+    testMotor.config_kI(Constants.kPIDLoopIdx, Constants.kI, Constants.kTimeoutMs);
+    testMotor.config_kD(Constants.kPIDLoopIdx, Constants.kD, Constants.kTimeoutMs);
 
     lFMaster = new WPI_TalonSRX(Constants.LFMASTER_ID);
     lFSlave = new WPI_TalonSRX(Constants.LFSLAVE_ID);

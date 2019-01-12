@@ -9,7 +9,6 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
-import frc.robot.commands.MoveForward;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -43,17 +42,17 @@ public class OI {
   // Start the command when the button is released and let it run the command
   // until it is finished as determined by it's isFinished method.
   // button.whenReleased(new ExampleCommand());
-public Joystick j0;
-public Joystick j1;
+  public Joystick j0;
+  public Joystick j1;
 
-public JoystickButton j1b8;
-  public OI()
-  {
+  public JoystickButton j1b8;
+
+  public OI() {
     j0 = new Joystick(0);
     j1 = new Joystick(1);
 
     j1b8 = new JoystickButton(j1, 8);
-   // j1b8.whenPressed(new MoveForward(0.5, 10));
+    // j1b8.whenPressed(new MoveForward(0.5, 10));
   }
 
 }
