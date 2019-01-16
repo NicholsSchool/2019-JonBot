@@ -42,7 +42,7 @@ public class Cameras extends Subsystem {
 
             while (!Thread.interrupted()) {
                 videoSink.grabFrame(src);
-                Vision.grabLines(src, src);
+                Vision.grabLinesC(src, src);
                 outputStream.putFrame(src);
             }
 
