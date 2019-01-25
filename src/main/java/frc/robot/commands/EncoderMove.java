@@ -11,9 +11,10 @@ public class EncoderMove extends Command
     double speed;
     double startPosition;
     double rotations;
-
+    double in;
     public EncoderMove(double in, double s)
     {
+        this.in = in;
         
         rotations = (in/(Constants.WHEEL_DIAMETER*Math.PI));
         distance =  rotations * (Constants.TICKS_PER_ROTATION);
@@ -53,6 +54,7 @@ public class EncoderMove extends Command
     @Override
     protected void execute()
     {
+        System.out.println("Going " + in / 12 + " feet");
         Robot.driveTrain.move(speed, speed);
     }
     @Override

@@ -7,12 +7,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
-import frc.robot.commands.AutoPaths;
-import frc.robot.commands.EncoderMove;
-import frc.robot.commands.MoveForward;
-import frc.robot.commands.TurnToAngle;
+import frc.robot.commands.*;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -58,7 +56,7 @@ public class OI
   public JoystickButton j1b6; 
   public JoystickButton j0b5;
   public JoystickButton j0b4;
-
+  double move;
   public OI() 
   {
     j0 = new Joystick(0);
@@ -74,9 +72,14 @@ public class OI
 
     // j1b8.whenPressed(new MoveForward(0.5, 10));
     j0b8.whenPressed(new MoveForward(0.5, 2));
+    move = Robot.entry.getDouble(0);
+    Robot.entry.addListener(event ->{
+      move = event.value.getDouble();
+    }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
-    j1b3.whenPressed(new EncoderMove(12, 0.5));
-    j0b4.whenPressed(new EncoderMove(-12, -0.5));
+    j1b3.whenPressed(new EncoderMove(move*12, 0.5)); //Testing basic value sent from network table
+
+    j0b4.whenPressed(new SelfCorrect()); //Testing the selfCorrect
 
     j1b7.whenPressed(new TurnToAngle(90, 0.5));
     j1b6.whenPressed(new TurnToAngle(-90, 0.5));

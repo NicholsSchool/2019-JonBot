@@ -9,6 +9,9 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -30,7 +33,9 @@ public class Robot extends TimedRobot
    public static NavX navX;
   Command m_autonomousCommand;
   SendableChooser<Command> m_chooser = new SendableChooser<>();
-
+  public static NetworkTableEntry entry;
+  public static NetworkTableEntry xEntry;
+  public static NetworkTableEntry yEntry;
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -39,8 +44,13 @@ public class Robot extends TimedRobot
   public void robotInit() 
   {
     RobotMap.init();
-     navX = new NavX(RobotMap.ahrs);
-     driveTrain = new DriveTrain();
+    NetworkTableInstance inst =  NetworkTableInstance.getDefault();
+    NetworkTable table = inst.getTable("pi"); 
+    entry = table.getEntry("feet");
+    xEntry = table.getEntry("xPercent");
+    yEntry = table.getEntry("yPercent");
+    navX = new NavX(RobotMap.ahrs);
+    driveTrain = new DriveTrain();
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
     oi = new OI();
@@ -146,6 +156,8 @@ public class Robot extends TimedRobot
     //driveTrain.tankDrive();
     //driveTrain.mecanumDrive();
     SmartDashboard.putNumber("testMotor:", RobotMap.testMotor.getOutputCurrent());
+ //   System.out.println("PI Value: " + entry.getDouble(0) );
+
 /*
     if (oi.j0.getRawButton(1)) {
       System.out.println("PID Looping");
