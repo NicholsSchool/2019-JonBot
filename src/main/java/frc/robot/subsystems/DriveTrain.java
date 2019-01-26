@@ -12,7 +12,7 @@ public class DriveTrain extends Subsystem
 	@Override
     protected void initDefaultCommand() 
     {
-
+        setDefaultCommand(new TankDrive());
     }
     public void tankDrive()
     {

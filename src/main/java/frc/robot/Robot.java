@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.AlignDemo;
 import frc.robot.sensors.NavX;
 import frc.robot.subsystems.DriveTrain;
 /**
@@ -137,6 +138,8 @@ public class Robot extends TimedRobot
     {
       m_autonomousCommand.cancel();
     }
+
+    // new AlignDemo().start();
   }
 
   /**
