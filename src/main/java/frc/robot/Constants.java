@@ -8,7 +8,7 @@ public class Constants {
 
     public static final int kSlotIdx = 0;
 
-    public static final double SIGMOID_A = 6;
+    public static final double SIGMOID_A = 25;
     /**
      * Talon SRX/ Victor SPX will supported multiple (cascaded) PID loops. For now
      * we just want the primary one.
