@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
@@ -12,13 +13,18 @@ import frc.robot.Robot;
 public class DriveTrain extends Subsystem
 {
     WPI_TalonSRX[] motors = new WPI_TalonSRX[4];
+    public double currentSpeed;
+    private double desiredSpeed;
     public DriveTrain()
     {
         motors[0] = RobotMap.lFMaster;
         motors[1] = RobotMap.lBMaster;
         motors[2] = RobotMap.rFMaster;
         motors[3] = RobotMap.rBMaster;
-        config();
+        reset();
+       // config();
+       motors[0].setNeutralMode(NeutralMode.Coast);
+        motors[0].setSafetyEnabled(false);
     }
 
 	@Override
@@ -26,8 +32,6 @@ public class DriveTrain extends Subsystem
 		
     }
     
-
-
     private void config()
     {
         for(int i = 0; i < motors.length; i ++)
@@ -36,22 +40,24 @@ public class DriveTrain extends Subsystem
             // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, Constants.kTimeoutMs);
             // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, Constants.kTimeoutMs);
 
-            motors[i].configNominalOutputForward(0, Constants.kTimeoutMs);
-            motors[i].configNominalOutputReverse(0, Constants.kTimeoutMs);
-            motors[i].configPeakOutputForward(1, Constants.kTimeoutMs);
-            motors[i].configPeakOutputReverse(-1, Constants.kTimeoutMs);
+            // motors[i].configNominalOutputForward(0, Constants.kTimeoutMs);
+            // motors[i].configNominalOutputReverse(0, Constants.kTimeoutMs);
+            // motors[i].configPeakOutputForward(1, Constants.kTimeoutMs);
+            // motors[i].configPeakOutputReverse(-1, Constants.kTimeoutMs);
 
-            motors[i].config_kF(Constants.kPIDLoopIdx, Constants.kF, Constants.kTimeoutMs);
-            motors[i].config_kP(Constants.kPIDLoopIdx, Constants.kP, Constants.kTimeoutMs);
-            motors[i].config_kI(Constants.kPIDLoopIdx, Constants.kI, Constants.kTimeoutMs);
-            motors[i].config_kD(Constants.kPIDLoopIdx, Constants.kD, Constants.kTimeoutMs);
+            // motors[i].config_kF(Constants.kPIDLoopIdx, Constants.kF, Constants.kTimeoutMs);
+            // motors[i].config_kP(Constants.kPIDLoopIdx, Constants.kP, Constants.kTimeoutMs);
+            // motors[i].config_kI(Constants.kPIDLoopIdx, Constants.kI, Constants.kTimeoutMs);
+            // motors[i].config_kD(Constants.kPIDLoopIdx, Constants.kD, Constants.kTimeoutMs);
           
             /* Set acceleration and vcruise velocity - see documentation */
             // motors[i].configMotionCruiseVelocity(15000, Constants.kTimeoutMs);
             // motors[i].configMotionAcceleration(6000, Constants.kTimeoutMs);
 
             /* Zero the sensor */
-            motors[i].setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
+            // motors[i].setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
+             motors[i].setNeutralMode(NeutralMode.Coast);
+            motors[i].setSafetyEnabled(false);
         }
     }
 
@@ -94,6 +100,68 @@ public class DriveTrain extends Subsystem
         }
     }
 
+    public void reset()
+    {
+        currentSpeed = 0; 
+        desiredSpeed = 0;
+    }
+    
+    private double previous = 0;
+    public void set(double speed)
+    {
+       
+      /*  for(int i = 0; i < motors.length; i ++)
+        {
+            int direction = 1;
+            if(i < 2)
+                direction*= -1;
+
+            motors[i].set(speed * direction);
+        }*/
+        motors[0].set(-Math.copySign(speed * speed, speed));
+
+        currentSpeed = speed;
+    }
+
+    public void sigmoidMove(double speed)
+    {
+        if(speed > 0.99 || speed < -0.99)
+            speed = 0.99 * speed;
+        
+        desiredSpeed = speed;
+        if(Math.abs(desiredSpeed - currentSpeed) < 0.01)
+        {
+            move(desiredSpeed, desiredSpeed);
+            return;
+        }
+
+        double startTime = inverseSig(currentSpeed);
+        double cycleTime = 0.02;
+        //System.out.println("StartTime: " + startTime);
+        if(desiredSpeed < currentSpeed)
+            cycleTime = -cycleTime;
+        
+        double sigSpeed = sigmoid(startTime + cycleTime);
+        //System.out.println("desiredSpeed: " + desiredSpeed);
+        //System.out.println("currentSpeed: " + currentSpeed);
+        //System.out.println("new Speed: " + sigSpeed );
+
+     //   set(sigSpeed);
+     System.out.println(sigSpeed);
+            move(sigSpeed, sigSpeed);
+       
+    }
+
+    private double sigmoid(double time)
+    {
+        return 2/(1 + Math.pow(Math.E, -time* Constants.SIGMOID_A)) - 1;
+    }
+
+    private double inverseSig(double speed)
+    {
+        return -Math.log(2/(speed + 1) - 1)/ Constants.SIGMOID_A;
+    }
+
     public void motionMagic(double speed)
     {
 
@@ -110,6 +178,7 @@ public class DriveTrain extends Subsystem
     public void move(double leftSpeed, double rightSpeed)
     {
         RobotMap.driveTank.tankDrive(leftSpeed, rightSpeed);
+        currentSpeed = leftSpeed;
     }
 
     public void stop()

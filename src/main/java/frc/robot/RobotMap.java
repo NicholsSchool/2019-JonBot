@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 /**
@@ -42,7 +43,11 @@ public class RobotMap {
 
   public static DifferentialDrive driveTank;
 
+  public static Timer timer;
+
   public static void init() {
+    timer = new Timer();
+
     testMotor = new WPI_TalonSRX(Constants.MOTOR1VAL);
 
     /* Config sensor used for Primary PID [Velocity] */

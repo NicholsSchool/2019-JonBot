@@ -32,6 +32,7 @@ import frc.robot.subsystems.DriveTrain;
 public class Robot extends TimedRobot {
   public static OI oi;
    public static DriveTrain driveTrain;
+
   Command m_autonomousCommand;
   SendableChooser<Command> m_chooser = new SendableChooser<>();
   NetworkTableEntry entry;
@@ -44,6 +45,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     RobotMap.init();
+    RobotMap.timer.start();
     driveTrain = new DriveTrain();
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
@@ -128,8 +130,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    driveTrain.reset();
   }
-
+  boolean buttonPressed = false;
   /**
    * This function is called periodically during operator control.
    */
@@ -146,7 +149,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("P:", Constants.kP);
     SmartDashboard.putNumber("I:", Constants.kI);
     SmartDashboard.putNumber("D:", Constants.kD);
-    double test = 0;
+    //double test = 0;
 /*
     entry.addListener(event ->{
       System.out.println("Value Changed: " + event.value.getValue() );
@@ -179,20 +182,25 @@ public class Robot extends TimedRobot {
 
 */
 
-    SmartDashboard.putString("Left Front", "" +RobotMap.lFMaster.getSelectedSensorPosition(0));
-    SmartDashboard.putString("Right Front", "" + RobotMap.rFMaster.getSelectedSensorPosition(0));
-    SmartDashboard.putString("Left Back", "" + RobotMap.lBMaster.getSelectedSensorPosition(0));
-    SmartDashboard.putString("Right Back", "" + RobotMap.rBMaster.getSelectedSensorPosition(0));
-    SmartDashboard.putString("LEFT SLAVE", "" + RobotMap.lBSlave.getSelectedSensorPosition(0));
+    SmartDashboard.putNumber("Left Front", RobotMap.lFMaster.getSelectedSensorPosition(0));
+    SmartDashboard.putNumber("Right Front", RobotMap.rFMaster.getSelectedSensorPosition(0));
+    SmartDashboard.putNumber("Left Back",  RobotMap.lBMaster.getSelectedSensorPosition(0));
+    SmartDashboard.putNumber("Right Back",  RobotMap.rBMaster.getSelectedSensorPosition(0));
+ 
+
+    SmartDashboard.putNumber("Left Front Velocity", RobotMap.lFMaster.getSelectedSensorVelocity(0));
+    SmartDashboard.putNumber("Right Front Velocity",  RobotMap.rFMaster.getSelectedSensorVelocity(0));
+    SmartDashboard.putNumber("Left Back Velocity", RobotMap.lBMaster.getSelectedSensorVelocity(0));
+    SmartDashboard.putNumber("Right Back Velocity",  RobotMap.rBMaster.getSelectedSensorVelocity(0));
     /* If Talon is in position closed-loop, print some more info */
   
     SmartDashboard.putString("Line X", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineX").getDouble(0));
     SmartDashboard.putString("Line Y", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineY").getDouble(0));
-    
-    if (oi.j0.getRawButton(1)) {
-      
-    } 
-  //  driveTrain.setVelocity(speed);
+    RobotMap.timer.reset();
+    driveTrain.sigmoidMove(speed);
+    SmartDashboard.putNumber("DriveTrain speed: ", driveTrain.currentSpeed);
+  // driveTrain.tankDrive();
+
     /*else {
       System.out.println("Normal");
       RobotMap.testMotor.set(ControlMode.PercentOutput, speed);
