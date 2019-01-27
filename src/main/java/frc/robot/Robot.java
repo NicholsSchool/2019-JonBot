@@ -48,7 +48,7 @@ public class Robot extends TimedRobot {
     RobotMap.init();
     RobotMap.timer.start();
     driveTrain = new DriveTrain();
-    independent = new IndependentDriveTrain();
+    independent = new IndependentDriveTrain(RobotMap.leftMaster, RobotMap.rightMaster);
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
     oi = new OI();
