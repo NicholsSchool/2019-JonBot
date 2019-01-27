@@ -15,6 +15,8 @@ public class DriveTrain extends Subsystem
     WPI_TalonSRX[] motors = new WPI_TalonSRX[4];
     public double currentSpeed;
     private double desiredSpeed;
+    private double[] desiredSpeeds;
+    private double[] currentSpeeds;
     public DriveTrain()
     {
         motors[0] = RobotMap.lFMaster;
@@ -23,8 +25,6 @@ public class DriveTrain extends Subsystem
         motors[3] = RobotMap.rBMaster;
         reset();
        // config();
-       motors[0].setNeutralMode(NeutralMode.Coast);
-        motors[0].setSafetyEnabled(false);
     }
 
 	@Override
@@ -102,54 +102,60 @@ public class DriveTrain extends Subsystem
 
     public void reset()
     {
-        currentSpeed = 0; 
-        desiredSpeed = 0;
+        desiredSpeeds = new double[2];
+        currentSpeeds = new double[2];
     }
     
-    private double previous = 0;
     public void set(double speed)
     {
        
-      /*  for(int i = 0; i < motors.length; i ++)
+        for(int i = 0; i < motors.length; i ++)
         {
             int direction = 1;
             if(i < 2)
                 direction*= -1;
 
             motors[i].set(speed * direction);
-        }*/
-        motors[0].set(-Math.copySign(speed * speed, speed));
-
+        }
         currentSpeed = speed;
     }
 
-    public void sigmoidMove(double speed)
+  
+    public void sigmoidDrive()
     {
-        if(speed > 0.99 || speed < -0.99)
+        sigmoidMove(-Robot.oi.j0.getY(), -Robot.oi.j1.getY());
+    }
+
+    public void sigmoidMove(double leftSpeed, double rightSpeed)
+    {
+        double left = sigmoidSideMove(leftSpeed, false);
+        double right = sigmoidSideMove(rightSpeed, true);
+        move(left, right);
+    }
+
+    private double sigmoidSideMove(double speed, boolean isRight)
+    {
+        int index = 0;
+        if(isRight)
+            index = 1;
+
+        if (speed > 0.99 || speed < -0.99)
             speed = 0.99 * speed;
-        
-        desiredSpeed = speed;
-        if(Math.abs(desiredSpeed - currentSpeed) < 0.01)
-        {
-            move(desiredSpeed, desiredSpeed);
-            return;
+
+        desiredSpeeds[index] = speed;
+        if (Math.abs(desiredSpeeds[index] - currentSpeeds[index]) < 0.01) {
+            return desiredSpeeds[index];
         }
 
-        double startTime = inverseSig(currentSpeed);
+        double startTime = inverseSig(currentSpeeds[index]);
         double cycleTime = 0.02;
-        //System.out.println("StartTime: " + startTime);
-        if(desiredSpeed < currentSpeed)
-            cycleTime = -cycleTime;
-        
-        double sigSpeed = sigmoid(startTime + cycleTime);
-        //System.out.println("desiredSpeed: " + desiredSpeed);
-        //System.out.println("currentSpeed: " + currentSpeed);
-        //System.out.println("new Speed: " + sigSpeed );
 
-     //   set(sigSpeed);
-     System.out.println(sigSpeed);
-            move(sigSpeed, sigSpeed);
-       
+        if (desiredSpeeds[index] < currentSpeeds[index])
+            cycleTime = -cycleTime;
+
+        double sigSpeed = sigmoid(startTime + cycleTime);
+
+        return sigSpeed;
     }
 
     private double sigmoid(double time)
@@ -178,7 +184,8 @@ public class DriveTrain extends Subsystem
     public void move(double leftSpeed, double rightSpeed)
     {
         RobotMap.driveTank.tankDrive(leftSpeed, rightSpeed);
-        currentSpeed = leftSpeed;
+        currentSpeeds[0] = leftSpeed;
+        currentSpeeds[1] = rightSpeed;
     }
 
     public void stop()

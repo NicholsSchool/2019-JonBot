@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.IndependentDriveTrain;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -32,7 +33,7 @@ import frc.robot.subsystems.DriveTrain;
 public class Robot extends TimedRobot {
   public static OI oi;
    public static DriveTrain driveTrain;
-
+  public static IndependentDriveTrain independent;
   Command m_autonomousCommand;
   SendableChooser<Command> m_chooser = new SendableChooser<>();
   NetworkTableEntry entry;
@@ -47,6 +48,7 @@ public class Robot extends TimedRobot {
     RobotMap.init();
     RobotMap.timer.start();
     driveTrain = new DriveTrain();
+    independent = new IndependentDriveTrain();
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
     oi = new OI();
@@ -141,46 +143,12 @@ public class Robot extends TimedRobot {
     Scheduler.getInstance().run();
     SmartDashboard.putNumber("Current Time:", System.currentTimeMillis());
     double speed = oi.j0.getY();
-    // RobotMap.testMotor.set(speed);
-    // RobotMap.driveTank.tankDrive(speed, speed);
 
-  //  driveTrain.tankDrive();
     SmartDashboard.putNumber("testMotor:", RobotMap.testMotor.getOutputCurrent());
     SmartDashboard.putNumber("P:", Constants.kP);
     SmartDashboard.putNumber("I:", Constants.kI);
     SmartDashboard.putNumber("D:", Constants.kD);
-    //double test = 0;
-/*
-    entry.addListener(event ->{
-      System.out.println("Value Changed: " + event.value.getValue() );
-    },EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-*/
-/*
-    if(oi.j0.getRawButton(1))
-    {
-      x++;
-      entry2.setDouble(x);
-    }
-    SmartDashboard.putNumber("Initial Value: ", entry2.getDouble(0));
-    entry2.addListener(event -> {
-      SmartDashboard.putNumber("Value Changed: ", event.value.getDouble());
-    }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate); */
-/*    if (oi.j0.getRawButton(7)) 
-      driveTrain.setDistance(1000.0, 0);
-    
-    else if (oi.j0.getRawButton(8))
-      driveTrain.setDistance(1000.0, 1);
-    else if (oi.j0.getRawButton(9))
-      driveTrain.setDistance(1000.0, 2);
-    else if (oi.j0.getRawButton(10))
-      driveTrain.setDistance(1000.0, 3);
-    else {
-      
-
-
-    }
-
-*/
+   
 
     SmartDashboard.putNumber("Left Front", RobotMap.lFMaster.getSelectedSensorPosition(0));
     SmartDashboard.putNumber("Right Front", RobotMap.rFMaster.getSelectedSensorPosition(0));
@@ -197,20 +165,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putString("Line X", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineX").getDouble(0));
     SmartDashboard.putString("Line Y", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineY").getDouble(0));
     RobotMap.timer.reset();
-    driveTrain.sigmoidMove(speed);
+    driveTrain.sigmoidDrive();
     SmartDashboard.putNumber("DriveTrain speed: ", driveTrain.currentSpeed);
   // driveTrain.tankDrive();
 
-    /*else {
-      System.out.println("Normal");
-      RobotMap.testMotor.set(ControlMode.PercentOutput, speed);
-    }   */
-    /*
-    try {
-      TimeUnit.MILLISECONDS.sleep(10);
-    } catch (Exception e) {
-      /// Do Nothing
-      }*/
+
       
   }
 
