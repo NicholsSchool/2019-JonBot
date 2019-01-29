@@ -7,7 +7,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -17,7 +16,6 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.commands.AlignDemo;
 import frc.robot.sensors.NavX;
 import frc.robot.subsystems.DriveTrain;
 /**
@@ -150,7 +148,6 @@ public class Robot extends TimedRobot
   {
     Scheduler.getInstance().run();
     //SmartDashboard.putNumber("Current Time:", System.currentTimeMillis());
-    double speed = oi.j0.getY();
    // RobotMap.lFMaster.set(speed);
     SmartDashboard.putNumber("Encoder Position:", RobotMap.lFMaster.getSelectedSensorPosition(0));
     // RobotMap.testMotor.set(speed);
