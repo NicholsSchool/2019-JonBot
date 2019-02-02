@@ -11,7 +11,9 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
@@ -41,6 +43,8 @@ public class RobotMap {
 
   public static DifferentialDrive driveTank;
 
+public static AHRS ahrs;
+
   public static void init() {
     testMotor = new WPI_TalonSRX(Constants.MOTOR1VAL);
 
@@ -67,6 +71,7 @@ public class RobotMap {
     testMotor.config_kD(Constants.kPIDLoopIdx, Constants.kD, Constants.kTimeoutMs);
 
     lFMaster = new WPI_TalonSRX(Constants.LFMASTER_ID);
+    lFMaster.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 200);
     lFSlave = new WPI_TalonSRX(Constants.LFSLAVE_ID);
 
     rFMaster = new WPI_TalonSRX(Constants.RFMASTER_ID);
@@ -86,5 +91,6 @@ public class RobotMap {
     rightMaster = new SpeedControllerGroup(rFMaster, rBMaster);
 
     driveTank = new DifferentialDrive(leftMaster, rightMaster);
+    ahrs = new AHRS(SPI.Port.kMXP);
   }
 }

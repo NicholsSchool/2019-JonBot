@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/* Copyright (c) 2017-2018 FIRST. All Rights Reserved.                        */
-/* Open Source Software - may be modified and shared by FRC teams. The code   */
-/* must be accompanied by the FIRST BSD license file in the root directory of */
-/* the project.                                                               */
-/*----------------------------------------------------------------------------*/
-
 package frc.robot;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import frc.robot.commands.Angle;
+import frc.robot.commands.EncoderMove;
 
 /**
  * This class is the glue that binds the controls on the physical operator
@@ -42,17 +37,22 @@ public class OI {
   // Start the command when the button is released and let it run the command
   // until it is finished as determined by it's isFinished method.
   // button.whenReleased(new ExampleCommand());
-  public Joystick j0;
-  public Joystick j1;
-
-  public JoystickButton j1b8;
-
-  public OI() {
+public Joystick j0;
+public Joystick j1;
+public JoystickButton j0b8;
+public JoystickButton j1b8;
+  public OI()
+  {
     j0 = new Joystick(0);
     j1 = new Joystick(1);
 
     j1b8 = new JoystickButton(j1, 8);
-    // j1b8.whenPressed(new MoveForward(0.5, 10));
+   // j1b8.whenPressed(new MoveForward(0.5, 10));
+   j0b8= new JoystickButton(j0, 8);
+   j0b8.whenPressed(new Angle(50));
+   
   }
 
 }
+
+

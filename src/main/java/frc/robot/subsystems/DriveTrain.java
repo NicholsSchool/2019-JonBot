@@ -52,4 +52,7 @@ public void setPosition(double position)
     {
         RobotMap.driveTank.stopMotor();
     }
+
+	public void resetEncoders() {
+	}
 }
