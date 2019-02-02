@@ -18,8 +18,7 @@ public class Vision {
 
     public static final int TIMEOUT = 500;
 
-    public static double x;
-    public static double y;
+    public static double angularDistance;
     public static double distance;
     public static double rotation;
 
@@ -27,8 +26,7 @@ public class Vision {
 
     public static void init() {
         // Default values
-        x = -1;
-        y = -1;
+        angularDistance = -1;
         distance = -1;
         rotation = -1;
         lastUpdate = -1;
@@ -36,12 +34,8 @@ public class Vision {
         NetworkTable table = NetworkTableInstance.getDefault().getTable("vision");
         int flags = EntryListenerFlags.kNew | EntryListenerFlags.kUpdate;
 
-        table.getEntry("x").addListener(event -> {
-            x = event.value.getDouble();
-            lastUpdate = System.currentTimeMillis();
-        }, flags);
-        table.getEntry("y").addListener(event -> {
-            y = event.value.getDouble();
+        table.getEntry("angularDistance").addListener(event -> {
+            angularDistance = event.value.getDouble();
             lastUpdate = System.currentTimeMillis();
         }, flags);
         table.getEntry("distance").addListener(event -> {

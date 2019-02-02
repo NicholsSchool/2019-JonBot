@@ -16,6 +16,7 @@ import frc.robot.sensors.Vision;
 public class AlignDemo extends Command {
 
     private double speed;
+    private double angularDistance;
     private double distance;
     private double rotation;
 
@@ -23,7 +24,7 @@ public class AlignDemo extends Command {
     private boolean isOnLine;
     private boolean isAligned;
 
-    private int startPosition;
+    public static final double DISTANCE_ERROR = 0.8;
 
     public AlignDemo(double speed) {
         // Use requires() here to declare subsystem dependencies
@@ -39,52 +40,59 @@ public class AlignDemo extends Command {
         isOnLine = false;
         isAligned = false;
 
-        System.out.println("Starting...\n\n");
+        System.out.println("\n\n[VISION]: Starting...\n\n");
+        Robot.navX.reset();
+        angularDistance = Vision.angularDistance;
+        System.out.println("\n\n[VISION]: Angular Distance: " + angularDistance);
     }
 
     // Called repeatedly when this Command is scheduled to run
     @Override
     protected void execute() {
         if (!isFacingLine) {
-            if (Vision.x > 0.55) {
-                Robot.driveTrain.move(speed, -speed);
-            } else if (Vision.x < 0.45) {
+            if (Robot.navX.getAngle() > angularDistance + 1) {
                 Robot.driveTrain.move(-speed, speed);
+            } else if (Robot.navX.getAngle() < angularDistance - 1) {
+                Robot.driveTrain.move(speed, -speed);
             } else {
-                System.out.println("Faced Line");
+                System.out.println("\n\n[VISION]: Faced Line\n\n");
                 isFacingLine = true;
 
-                distance = Vision.distance / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION;
+                distance = Vision.distance / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION * DISTANCE_ERROR;
                 rotation = Vision.rotation;
 
                 Robot.driveTrain.resetEncoders();
 
-                System.out.println("\n\n\n\nDistance: " + distance + ", Rotation: " + rotation + "\n\n\n\n");
+                System.out.println("\n\n[VISION]: Distance: " + distance + ", Rotation: " + rotation + "\n\n");
             }
+
+            return;
         }
 
         if (isFacingLine && !isOnLine) {
-            System.out.println("Goal: " + startPosition + distance + " Current Position: "
-                    + RobotMap.lFMaster.getSelectedSensorPosition(0));
             if (Math.abs(RobotMap.lFMaster.getSelectedSensorPosition(0)) < distance) {
                 RobotMap.driveTank.tankDrive(speed, speed);
             } else {
-                System.out.println("On Line");
+                System.out.println("\n\n[VISION]: On Line\n\n");
                 isOnLine = true;
-
                 Robot.navX.reset();
             }
+
+            return;
         }
 
         if (isFacingLine && isOnLine && !isAligned) {
-            if (Robot.navX.getAngle() > rotation + 5) {
+            System.out.println("\n\n\n\n\nGoal: " + rotation + ", Current: " + Robot.navX.getAngle() + "\n\n\n\n\n");
+            if (Robot.navX.getAngle() > rotation + 1) {
                 Robot.driveTrain.move(-speed, speed);
-            } else if (Robot.navX.getAngle() < rotation - 5) {
+            } else if (Robot.navX.getAngle() < rotation - 1) {
                 Robot.driveTrain.move(speed, -speed);
             } else {
-                System.out.println("Aligned");
+                System.out.println("\n\n[VISION]: Aligned\n\n");
                 isAligned = true;
             }
+
+            return;
         }
 
     }
@@ -97,6 +105,7 @@ public class AlignDemo extends Command {
 
     // Called once after isFinished returns true
     @Override
+    @SuppressWarnings({"resource"})
     protected void end() {
         Robot.driveTrain.stop();
         new TankDrive().start();
