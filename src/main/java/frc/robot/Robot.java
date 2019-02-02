@@ -16,7 +16,9 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.TankDrive;
 import frc.robot.sensors.NavX;
+import frc.robot.sensors.Vision;
 import frc.robot.subsystems.DriveTrain;
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -53,6 +55,7 @@ public class Robot extends TimedRobot
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
     oi = new OI();
+    Vision.init();
   }
 
   /**
@@ -176,6 +179,11 @@ public class Robot extends TimedRobot
     else
     {
      //driveTrain.tankDrive();
+    }
+
+    // Driver manual override
+    if(Math.abs(oi.j0.getY()) > 0.2 || Math.abs(oi.j1.getY()) > 0.2 && !TankDrive.isRunning) {
+        // new TankDrive().start();
     }
   }
 

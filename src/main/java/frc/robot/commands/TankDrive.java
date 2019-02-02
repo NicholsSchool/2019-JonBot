@@ -5,6 +5,7 @@ import frc.robot.Robot;
 
 public class TankDrive extends Command
 {
+    public static boolean isRunning = false;
 
     public TankDrive()
     {
@@ -13,7 +14,7 @@ public class TankDrive extends Command
     
     protected void initialize() 
     {
-        
+        isRunning = true;
     }
 
     
@@ -29,6 +30,7 @@ public class TankDrive extends Command
     @Override
     protected void end() {
         Robot.driveTrain.stop();
+        isRunning = false;
     }
 
     @Override

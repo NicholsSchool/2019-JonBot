@@ -54,7 +54,6 @@ public class EncoderMove extends Command
     @Override
     protected void execute()
     {
-        System.out.println("Going " + in / 12 + " feet");
         Robot.driveTrain.move(speed, speed);
     }
     @Override

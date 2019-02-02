@@ -7,88 +7,83 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.command.Command;
+import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.RobotMap;
+import frc.robot.sensors.Vision;
 
 public class AlignDemo extends Command {
 
-    private static final double SPEED = 0.5;
-    private static final long TIMEOUT = 500;
-    private static final double THRESHOLD_X = 0.05, THRESHOLD_Y = 0.75;
-    private static final double JOYSTICK_THRESHOLD = 0.1;
+    private double speed;
+    private double distance;
+    private double rotation;
 
-    private double x;
-    private double y;
-    private double vx;
-    private double vy;
-    private long lastUpdate;
+    private boolean isFacingLine;
+    private boolean isOnLine;
+    private boolean isAligned;
 
-    private NetworkTable table;
+    private int startPosition;
 
-    private boolean onLine;
-    private double angle;
-
-    public AlignDemo() {
+    public AlignDemo(double speed) {
+        // Use requires() here to declare subsystem dependencies
+        // eg. requires(chassis);
         requires(Robot.driveTrain);
-
-        x = 0;
-        y = 0;
-        vx = 0;
-        vy = 0;
-        lastUpdate = 0;
-
-        table = NetworkTableInstance.getDefault().getTable("vision");
-
-        table.getEntry("x").addListener(event -> {
-            x = event.value.getDouble();
-            lastUpdate = System.currentTimeMillis();
-        }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-        table.getEntry("y").addListener(event -> {
-            y = event.value.getDouble();
-            lastUpdate = System.currentTimeMillis();
-        }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-        table.getEntry("vx").addListener(event -> {
-            vx = event.value.getDouble();
-            lastUpdate = System.currentTimeMillis();
-        }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
-        table.getEntry("vy").addListener(event -> {
-            vy = event.value.getDouble();
-            lastUpdate = System.currentTimeMillis();
-        }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
+        this.speed = speed;
     }
 
     // Called just before this Command runs the first time
     @Override
     protected void initialize() {
-        System.out.println("Aligning....");
-        onLine = false;
-        angle = 0;
+        isFacingLine = false;
+        isOnLine = false;
+        isAligned = false;
+
+        System.out.println("Starting...\n\n");
     }
 
     // Called repeatedly when this Command is scheduled to run
     @Override
     protected void execute() {
-
-        if (System.currentTimeMillis() - lastUpdate < TIMEOUT) {
-
-            // Turn to the line from far away
-            if (x > 0.5 + THRESHOLD_X) {
-                Robot.driveTrain.move(SPEED, -SPEED);
-                angle = Math.atan(vy / vx);
-            } else if (x < 0.5 - THRESHOLD_X) {
-                Robot.driveTrain.move(-SPEED, SPEED);
-                angle = Math.atan(vy / vx);
+        if (!isFacingLine) {
+            if (Vision.x > 0.55) {
+                Robot.driveTrain.move(speed, -speed);
+            } else if (Vision.x < 0.45) {
+                Robot.driveTrain.move(-speed, speed);
             } else {
+                System.out.println("Faced Line");
+                isFacingLine = true;
 
-                // Move forward to the line
-                if (y < THRESHOLD_Y) {
-                    Robot.driveTrain.move(SPEED, SPEED);
-                } else {
-                    onLine = true;
-                }
+                distance = Vision.distance / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION;
+                rotation = Vision.rotation;
+
+                Robot.driveTrain.resetEncoders();
+
+                System.out.println("\n\n\n\nDistance: " + distance + ", Rotation: " + rotation + "\n\n\n\n");
+            }
+        }
+
+        if (isFacingLine && !isOnLine) {
+            System.out.println("Goal: " + startPosition + distance + " Current Position: "
+                    + RobotMap.lFMaster.getSelectedSensorPosition(0));
+            if (Math.abs(RobotMap.lFMaster.getSelectedSensorPosition(0)) < distance) {
+                RobotMap.driveTank.tankDrive(speed, speed);
+            } else {
+                System.out.println("On Line");
+                isOnLine = true;
+
+                Robot.navX.reset();
+            }
+        }
+
+        if (isFacingLine && isOnLine && !isAligned) {
+            if (Robot.navX.getAngle() > rotation + 5) {
+                Robot.driveTrain.move(-speed, speed);
+            } else if (Robot.navX.getAngle() < rotation - 5) {
+                Robot.driveTrain.move(speed, -speed);
+            } else {
+                System.out.println("Aligned");
+                isAligned = true;
             }
         }
 
@@ -97,25 +92,14 @@ public class AlignDemo extends Command {
     // Make this return true when this Command no longer needs to run execute()
     @Override
     protected boolean isFinished() {
-        boolean joystickMoved = Math.abs(Robot.oi.j0.getY()) > JOYSTICK_THRESHOLD
-                || Math.abs(Robot.oi.j1.getY()) > JOYSTICK_THRESHOLD;
-        return joystickMoved || onLine;
+        return isAligned;
     }
 
     // Called once after isFinished returns true
     @Override
-    @SuppressWarnings({"resource"})
     protected void end() {
         Robot.driveTrain.stop();
-        if (onLine) {
-            // Align with the line while on it
-            double complementary = Math.PI / 2 - Math.abs(angle);
-            double fromVertical = Math.copySign(complementary, angle);
-            fromVertical *= 180 / Math.PI;
-            new TurnToAngle(fromVertical, 0.5).start();
-        } else {
-            new TankDrive().start();
-        }
+        new TankDrive().start();
     }
 
     // Called when another command which requires one or more of the same

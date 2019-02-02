@@ -39,7 +39,6 @@ public class TurnToAngle extends Command
     {
         
         double currentAngle = Robot.navX.getAngle();
-        System.out.println("Current Angle:" + currentAngle);
         if (currentAngle < angle + 5 && currentAngle > angle - 5)
         {
             return true;

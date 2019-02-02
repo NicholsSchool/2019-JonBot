@@ -78,7 +78,7 @@ public class OI {
 
         j1b3.whenPressed(new EncoderMove(move * 12, 0.5)); // Testing basic value sent from network table
 
-        j0b4.whenPressed(new AlignDemo()); // Testing the selfCorrect
+        j0b4.whenPressed(new AlignDemo(0.5));
 
         j1b7.whenPressed(new TurnToAngle(90, 0.5));
         j1b6.whenPressed(new TurnToAngle(-90, 0.5));

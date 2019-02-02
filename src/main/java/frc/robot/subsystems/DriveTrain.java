@@ -28,7 +28,7 @@ public class DriveTrain extends Subsystem
     }
     public void resetEncoders()
         {
-            RobotMap.lFMaster.getSelectedSensorPosition(0);
+            RobotMap.lFMaster.setSelectedSensorPosition(0);
         }
     
     public void mecanumMove(double ySpeed, double xSpeed, double zRotation)
