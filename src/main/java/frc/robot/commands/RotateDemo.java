@@ -26,7 +26,7 @@ public class RotateDemo extends Command {
     @Override
     protected void initialize() {
         isAligned = false;
-        rotation = Vision.rotation;
+        rotation = Vision.angleToWall;
         Robot.navX.reset();
         System.out.println("\n\n\n\n");
     }
@@ -53,6 +53,7 @@ public class RotateDemo extends Command {
 
     // Called once after isFinished returns true
     @Override
+    @SuppressWarnings({"resource"})
     protected void end() {
         Robot.driveTrain.stop();
         new TankDrive().start();
