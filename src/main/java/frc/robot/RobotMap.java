@@ -12,6 +12,10 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.SPI;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
@@ -44,6 +48,9 @@ public class RobotMap {
   public static DifferentialDrive driveTank;
 
   public static Timer timer;
+
+  public static AHRS ahrs;
+  public static AnalogInput utltrasonic;
 
   public static void init() {
     timer = new Timer();
@@ -97,7 +104,7 @@ public class RobotMap {
 
     lFMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.kPIDLoopIdx,
         Constants.kTimeoutMs);
-    lFMaster.setSensorPhase(true);
+    lFMaster.setSensorPhase(false);
 
     lBMaster.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, Constants.kPIDLoopIdx,
         Constants.kTimeoutMs);
@@ -115,5 +122,8 @@ public class RobotMap {
     rightMaster = new SpeedControllerGroup(rFMaster, rBMaster);
 
     driveTank = new DifferentialDrive(leftMaster, rightMaster);
+
+    ahrs = new AHRS(SPI.Port.kMXP);
+    utltrasonic = new AnalogInput(3);
   }
 }

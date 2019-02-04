@@ -17,7 +17,7 @@ public class TankDrive extends Command
 
     
     protected void execute() {
-      Robot.driveTrain.tankDrive();
+      Robot.driveTrain.sigmoidDrive();
     }
 
 

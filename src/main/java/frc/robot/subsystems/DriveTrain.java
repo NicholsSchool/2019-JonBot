@@ -8,15 +8,14 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
 import frc.robot.RobotMap;
+import frc.robot.commands.TankDrive;
 import frc.robot.Constants;
 import frc.robot.Robot;
 public class DriveTrain extends Subsystem
 {
     WPI_TalonSRX[] motors = new WPI_TalonSRX[4];
-    public double currentSpeed;
-    private double desiredSpeed;
     private double[] desiredSpeeds;
-    private double[] currentSpeeds;
+    public double[] currentSpeeds;
     public DriveTrain()
     {
         motors[0] = RobotMap.lFMaster;
@@ -24,62 +23,65 @@ public class DriveTrain extends Subsystem
         motors[2] = RobotMap.rFMaster;
         motors[3] = RobotMap.rBMaster;
         reset();
-       // config();
+        config();
     }
 
-	@Override
-	protected void initDefaultCommand() {
-		
-    }
-    
     private void config()
     {
         for(int i = 0; i < motors.length; i ++)
         {
-       
-            // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, Constants.kTimeoutMs);
-            // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, Constants.kTimeoutMs);
+            // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10,
+            // Constants.kTimeoutMs);
+            // motors[i].setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10,
+            // Constants.kTimeoutMs);
 
-            // motors[i].configNominalOutputForward(0, Constants.kTimeoutMs);
-            // motors[i].configNominalOutputReverse(0, Constants.kTimeoutMs);
-            // motors[i].configPeakOutputForward(1, Constants.kTimeoutMs);
-            // motors[i].configPeakOutputReverse(-1, Constants.kTimeoutMs);
+            motors[i].configNominalOutputForward(0, Constants.kTimeoutMs);
+            motors[i].configNominalOutputReverse(0, Constants.kTimeoutMs);
+            motors[i].configPeakOutputForward(1, Constants.kTimeoutMs);
+            motors[i].configPeakOutputReverse(-1, Constants.kTimeoutMs);
 
-            // motors[i].config_kF(Constants.kPIDLoopIdx, Constants.kF, Constants.kTimeoutMs);
-            // motors[i].config_kP(Constants.kPIDLoopIdx, Constants.kP, Constants.kTimeoutMs);
-            // motors[i].config_kI(Constants.kPIDLoopIdx, Constants.kI, Constants.kTimeoutMs);
-            // motors[i].config_kD(Constants.kPIDLoopIdx, Constants.kD, Constants.kTimeoutMs);
-          
+            motors[i].config_kF(Constants.kPIDLoopIdx, Constants.kF,
+            Constants.kTimeoutMs);
+            motors[i].config_kP(Constants.kPIDLoopIdx, Constants.kP,
+            Constants.kTimeoutMs);
+            motors[i].config_kI(Constants.kPIDLoopIdx, Constants.kI,
+            Constants.kTimeoutMs);
+            motors[i].config_kD(Constants.kPIDLoopIdx, Constants.kD,
+            Constants.kTimeoutMs);
+
             /* Set acceleration and vcruise velocity - see documentation */
-            // motors[i].configMotionCruiseVelocity(15000, Constants.kTimeoutMs);
-            // motors[i].configMotionAcceleration(6000, Constants.kTimeoutMs);
+        //    motors[i].configMotionCruiseVelocity(15000, Constants.kTimeoutMs);
+        //    motors[i].configMotionAcceleration(6000, Constants.kTimeoutMs);
 
             /* Zero the sensor */
-            // motors[i].setSelectedSensorPosition(0, Constants.kPIDLoopIdx, Constants.kTimeoutMs);
-             motors[i].setNeutralMode(NeutralMode.Coast);
-            motors[i].setSafetyEnabled(false);
+            motors[i].setSelectedSensorPosition(0, Constants.kPIDLoopIdx,
+            Constants.kTimeoutMs);
         }
     }
 
-    public void setDistance(double distance, int motorID)
+	@Override
+	protected void initDefaultCommand() {
+		setDefaultCommand(new TankDrive());
+    }
+
+    public void resetEncoders()
+    {
+        for(int i = 0; i < motors.length; i ++)
+        {
+            motors[i].setSelectedSensorPosition(0);
+        }
+    }
+
+    public void setDistance(double distance)
     {
         double targetPositionRotations =  distance;
-
-        motors[motorID].set(ControlMode.Position, targetPositionRotations);
-
-        while (motors[motorID].getControlMode() == ControlMode.Position) {
-            System.out.println("MotorID: " + motorID );
-            System.out.println(motors[motorID].getSelectedSensorPosition(0));
-        }
-    /*    for(int i = 0; i < motors.length; i ++)
+        for(int i = 0; i < motors.length; i ++)
         {
             int direction = 1;
             if (i >= 2)
                 direction *= -1;
             motors[i].set(ControlMode.Position, targetPositionRotations * direction);
-            
-
-        } */
+        } 
     }
     //Not Working
     public void setVelocity(double speed)
@@ -117,9 +119,12 @@ public class DriveTrain extends Subsystem
 
             motors[i].set(speed * direction);
         }
-        currentSpeed = speed;
     }
 
+    public void stopMotor(int index)
+    {
+        motors[index].stopMotor();
+    }
   
     public void sigmoidDrive()
     {
@@ -128,12 +133,17 @@ public class DriveTrain extends Subsystem
 
     public void sigmoidMove(double leftSpeed, double rightSpeed)
     {
-        double left = sigmoidSideMove(leftSpeed, false);
-        double right = sigmoidSideMove(rightSpeed, true);
+       sigmoidMove(leftSpeed, rightSpeed, Constants.SIGMOID_A);
+    }
+
+    public void sigmoidMove(double leftSpeed, double rightSpeed, double a)
+    {
+        double left = sigmoidSideMove(leftSpeed, false, a);
+        double right = sigmoidSideMove(rightSpeed, true, a);
         move(left, right);
     }
 
-    private double sigmoidSideMove(double speed, boolean isRight)
+    private double sigmoidSideMove(double speed, boolean isRight, double a)
     {
         int index = 0;
         if(isRight)
@@ -147,34 +157,37 @@ public class DriveTrain extends Subsystem
             return desiredSpeeds[index];
         }
 
-        double startTime = inverseSig(currentSpeeds[index]);
+        double startTime = inverseSig(currentSpeeds[index], a);
         double cycleTime = 0.02;
 
         if (desiredSpeeds[index] < currentSpeeds[index])
             cycleTime = -cycleTime;
 
-        double sigSpeed = sigmoid(startTime + cycleTime);
+        double sigSpeed = sigmoid(startTime + cycleTime, a);
 
         return sigSpeed;
     }
 
+    private double sigmoid(double time, double a)
+    {
+        return 2 / (1 + Math.pow(Math.E, -time * a)) - 1;
+    }
+
     private double sigmoid(double time)
     {
-        return 2/(1 + Math.pow(Math.E, -time* Constants.SIGMOID_A)) - 1;
+        return sigmoid(time, Constants.SIGMOID_A);
+    }
+
+    private double inverseSig(double speed, double a)
+    {
+        return -Math.log(2 / (speed + 1) - 1) / a;
     }
 
     private double inverseSig(double speed)
     {
-        return -Math.log(2/(speed + 1) - 1)/ Constants.SIGMOID_A;
+        return inverseSig(speed, Constants.SIGMOID_A);
     }
 
-    public void motionMagic(double speed)
-    {
-
-        double targetPos = speed * 4096 * 10.0;
-        for(int i = 0; i < motors.length; i ++)
-            motors[i].set(ControlMode.MotionMagic, targetPos);
-    }
 
     public void tankDrive()
     {
@@ -190,6 +203,7 @@ public class DriveTrain extends Subsystem
 
     public void stop()
     {
+        reset();
         RobotMap.driveTank.stopMotor();
     }
 }

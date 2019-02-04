@@ -272,6 +272,7 @@ public class IndependentDriveTrain extends RobotDriveBase {
     public void sigmoidMove(double leftSpeed, double rightSpeed) {
         double left = sigmoidSideMove(leftSpeed, false);
         double right = sigmoidSideMove(rightSpeed, true);
+        System.out.println("Sigmoid moving");
         tankDrive(left, right); //Test to see if the movement is smooth, 
                                 //then try changing the use of speed controller groups
                                 // to each motor
@@ -349,7 +350,7 @@ public class IndependentDriveTrain extends RobotDriveBase {
             leftSpeed = Math.copySign(leftSpeed * leftSpeed, leftSpeed);
             rightSpeed = Math.copySign(rightSpeed * rightSpeed, rightSpeed);
         }
-
+        System.out.println("leftSpeed" + leftSpeed);
         m_leftMotor.set(leftSpeed * m_maxOutput);
         m_rightMotor.set(rightSpeed * m_maxOutput * m_rightSideInvertMultiplier);
 
