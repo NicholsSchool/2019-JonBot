@@ -183,6 +183,7 @@ public class Robot extends TimedRobot
 
     // Driver manual override
     if((Math.abs(oi.j0.getY()) > 0.5 || Math.abs(oi.j1.getY()) > 0.5) && !TankDrive.isRunning) {
+        System.out.println("Starting a new tank drive command");
         new TankDrive().start();
     }
   }

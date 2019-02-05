@@ -41,7 +41,6 @@ public class AlignDemo extends Command {
         System.out.println("\n\n[VISION]: Starting...\n\n");
         Robot.navX.reset();
         angleToLine = Vision.angleToLine;
-        System.out.println("\n\n[VISION]: Angular Distance: " + angleToLine);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -62,8 +61,6 @@ public class AlignDemo extends Command {
                 angleToWall = Vision.angleToWall;
 
                 Robot.driveTrain.resetEncoders();
-
-                System.out.println("\n\n[VISION]: Distance: " + distanceToLine + ", Rotation: " + angleToWall + "\n\n");
             }
 
         } else if (!isOnLine) {
@@ -78,7 +75,6 @@ public class AlignDemo extends Command {
 
         } else if (!isAligned) {
 
-            System.out.println("\n\n\n\n\nGoal: " + angleToWall + ", Current: " + Robot.navX.getAngle() + "\n\n\n\n\n");
             if (Robot.navX.getAngle() > angleToWall + 1) {
                 Robot.driveTrain.move(-speed, speed);
             } else if (Robot.navX.getAngle() < angleToWall - 1) {
@@ -100,10 +96,8 @@ public class AlignDemo extends Command {
 
     // Called once after isFinished returns true
     @Override
-    @SuppressWarnings({ "resource" })
     protected void end() {
         Robot.driveTrain.stop();
-        new TankDrive().start();
     }
 
     // Called when another command which requires one or more of the same
