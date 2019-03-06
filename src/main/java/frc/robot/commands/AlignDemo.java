@@ -24,6 +24,8 @@ public class AlignDemo extends Command {
     private boolean isOnLine;
     private boolean isAligned;
 
+    public static final int ANGLE_BUFFER = 4;
+
     public AlignDemo(double speed) {
         // Use requires() here to declare subsystem dependencies
         // eg. requires(chassis);
@@ -41,6 +43,8 @@ public class AlignDemo extends Command {
         System.out.println("\n\n[VISION]: Starting...\n\n");
         Robot.navX.reset();
         angleToLine = Vision.angleToLine;
+        distanceToLine = Vision.distanceToLine * 12 / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION;
+        angleToWall = Vision.angleToWall - Vision.angleToLine;
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -48,17 +52,13 @@ public class AlignDemo extends Command {
     protected void execute() {
         if (!isFacingLine) {
 
-            if (Robot.navX.getAngle() > angleToLine + 1) {
+            if (Robot.navX.getAngle() > angleToLine + ANGLE_BUFFER) {
                 Robot.driveTrain.move(-speed, speed);
-            } else if (Robot.navX.getAngle() < angleToLine - 1) {
+            } else if (Robot.navX.getAngle() < angleToLine - ANGLE_BUFFER) {
                 Robot.driveTrain.move(speed, -speed);
             } else {
                 System.out.println("\n\n[VISION]: Faced Line\n\n");
                 isFacingLine = true;
-
-                distanceToLine = Vision.distanceToLine / Constants.WHEEL_DIAMETER / Math.PI
-                        * Constants.TICKS_PER_ROTATION;
-                angleToWall = Vision.angleToWall;
 
                 Robot.driveTrain.resetEncoders();
             }
@@ -75,9 +75,9 @@ public class AlignDemo extends Command {
 
         } else if (!isAligned) {
 
-            if (Robot.navX.getAngle() > angleToWall + 1) {
+            if (Robot.navX.getAngle() > angleToWall + ANGLE_BUFFER) {
                 Robot.driveTrain.move(-speed, speed);
-            } else if (Robot.navX.getAngle() < angleToWall - 1) {
+            } else if (Robot.navX.getAngle() < angleToWall - ANGLE_BUFFER) {
                 Robot.driveTrain.move(speed, -speed);
             } else {
                 System.out.println("\n\n[VISION]: Aligned\n\n");
