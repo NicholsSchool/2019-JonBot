@@ -57,6 +57,8 @@ public class OI {
     public JoystickButton j0b4;
     double move;
 
+    public JoystickButton j1b4;
+
     public OI() {
         j0 = new Joystick(0);
         j1 = new Joystick(1);
@@ -69,6 +71,8 @@ public class OI {
         j0b5 = new JoystickButton(j0, 5);
         j0b4 = new JoystickButton(j0, 4);
 
+        j1b4 = new JoystickButton(j1, 4);
+
         // j1b8.whenPressed(new MoveForward(0.5, 10));
         j0b8.whenPressed(new MoveForward(0.5, 2));
         move = Robot.entry.getDouble(0);
@@ -76,14 +80,15 @@ public class OI {
             move = event.value.getDouble();
         }, EntryListenerFlags.kNew | EntryListenerFlags.kUpdate);
 
-        j1b3.whenPressed(new EncoderMove(move * 12, 0.5)); // Testing basic value sent from network table
+        // j1b3.whenPressed(new EncoderMove(move * 12, 0.5)); // Testing basic value sent from network table
 
-        j0b4.whenPressed(new AlignDemo(0.6));
 
         j1b7.whenPressed(new TurnToAngle(90, 0.5));
         j1b6.whenPressed(new TurnToAngle(-90, 0.5));
 
-        j0b5.whenPressed(new RotateDemo(0.6));
+
+        j1b3.whenPressed(new MultiWaypointAlign());
+        j1b4.whenPressed(new WaypointAlign(1, 0.6));
     }
  
 }

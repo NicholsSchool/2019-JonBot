@@ -7,15 +7,21 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.command.Command;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotMap;
-import frc.robot.sensors.Vision;
 
-public class AlignDemo extends Command {
+public class WaypointAlign extends Command {
+    private double piAngleToLine;
+    private double piDistanceToLine;
+    private double piAngleToWall;
 
     private double speed;
+
     private double angleToLine;
     private double distanceToLine;
     private double angleToWall;
@@ -26,10 +32,22 @@ public class AlignDemo extends Command {
 
     public static final int ANGLE_BUFFER = 4;
 
-    public AlignDemo(double speed) {
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
+    public WaypointAlign(int waypoint, double speed) {
         requires(Robot.driveTrain);
+
+        NetworkTable table = NetworkTableInstance.getDefault().getTable("vision");
+        int flags = EntryListenerFlags.kNew | EntryListenerFlags.kUpdate;
+
+        table.getEntry("angleToLine" + waypoint).addListener(event -> {
+            piAngleToLine = event.value.getDouble();
+        }, flags);
+        table.getEntry("distanceToLine" + waypoint).addListener(event -> {
+            piDistanceToLine = event.value.getDouble();
+        }, flags);
+        table.getEntry("angleToWall" + waypoint).addListener(event -> {
+            piAngleToWall = event.value.getDouble();
+        }, flags);
+
         this.speed = speed;
     }
 
@@ -40,18 +58,18 @@ public class AlignDemo extends Command {
         isOnLine = false;
         isAligned = false;
 
-        System.out.println("\n\n[VISION]: Starting...\n\n");
         Robot.navX.reset();
-        angleToLine = Vision.angleToLine;
-        distanceToLine = Vision.distanceToLine * 12 / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION;
-        angleToWall = Vision.angleToWall - Vision.angleToLine;
+
+        angleToLine = piAngleToLine;
+        distanceToLine = piDistanceToLine * 12 / Constants.WHEEL_DIAMETER / Math.PI * Constants.TICKS_PER_ROTATION;
+        angleToWall = piAngleToWall - piAngleToLine;
     }
 
     // Called repeatedly when this Command is scheduled to run
     @Override
     protected void execute() {
-        if (!isFacingLine) {
 
+        if (!isFacingLine) {
             if (Robot.navX.getAngle() > angleToLine + ANGLE_BUFFER) {
                 Robot.driveTrain.move(-speed, speed);
             } else if (Robot.navX.getAngle() < angleToLine - ANGLE_BUFFER) {
@@ -74,7 +92,6 @@ public class AlignDemo extends Command {
             }
 
         } else if (!isAligned) {
-
             if (Robot.navX.getAngle() > angleToWall + ANGLE_BUFFER) {
                 Robot.driveTrain.move(-speed, speed);
             } else if (Robot.navX.getAngle() < angleToWall - ANGLE_BUFFER) {
@@ -85,7 +102,6 @@ public class AlignDemo extends Command {
             }
 
         }
-
     }
 
     // Make this return true when this Command no longer needs to run execute()
@@ -105,5 +121,24 @@ public class AlignDemo extends Command {
     @Override
     protected void interrupted() {
         end();
+    }
+
+    
+    // Gets a smoothed motor value from 0 to 1 based on a x value from 0 to 1
+    private double sigmoidProfile(double x) {
+        x = Math.abs(x);
+        x += 0.05;
+
+        if(x < 0 || x > 1) {
+            return 0;
+        }
+
+        final double a = 5;
+
+        if(x < 0.5) {
+            return 2 / (1 + Math.pow(Math.E, -a * x)) - 1;
+        } else {
+            return 2 / (1 + Math.pow(Math.E, a * x - a)) - 1;
+        }
     }
 }
