@@ -16,13 +16,19 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.ArduinoSend;
 import frc.robot.sensors.NavX;
+import frc.robot.sensors.Vision;
+import frc.robot.subsystems.Arduino;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.IndependentDriveTrain;
+
+import edu.wpi.first.wpilibj.I2C;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -36,6 +42,8 @@ public class Robot extends TimedRobot {
    public static DriveTrain driveTrain;
   public static IndependentDriveTrain independent;
   public static NavX navX;
+  public static Arduino arduino;
+  public static int arudinoSend;
   Command m_autonomousCommand;
   SendableChooser<Command> m_chooser = new SendableChooser<>();
   NetworkTableEntry entry;
@@ -52,8 +60,11 @@ public class Robot extends TimedRobot {
     driveTrain = new DriveTrain();
     independent = new IndependentDriveTrain(RobotMap.leftMaster, RobotMap.rightMaster);
     navX = new NavX(RobotMap.ahrs);
+    arduino = new Arduino();
     // chooser.addObject("My Auto", new MyAutoCommand());
     SmartDashboard.putData("Auto mode", m_chooser);
+    Vision.init();
+    arudinoSend = 1;
     oi = new OI();
     NetworkTableInstance inst =  NetworkTableInstance.getDefault();
     NetworkTable table = inst.getTable("pi"); 
@@ -138,68 +149,23 @@ public class Robot extends TimedRobot {
     driveTrain.reset();
     independent.reset();
   }
-  boolean buttonPressed = false;
   /**
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
     Scheduler.getInstance().run();
-    // SmartDashboard.putNumber("Current Time:", System.currentTimeMillis());
-    double speed = oi.j0.getY();
 
-    // SmartDashboard.putNumber("testMotor:", RobotMap.testMotor.getOutputCurrent());
-    // SmartDashboard.putNumber("P:", Constants.kP);
-    // SmartDashboard.putNumber("I:", Constants.kI);
-    // SmartDashboard.putNumber("D:", Constants.kD);
-   
-
-    SmartDashboard.putNumber("Left Front", RobotMap.lFMaster.getSelectedSensorPosition(0));
-    // SmartDashboard.putNumber("Right Front", RobotMap.rFMaster.getSelectedSensorPosition(0));
-    // SmartDashboard.putNumber("Left Back",  RobotMap.lBMaster.getSelectedSensorPosition(0));
-    // SmartDashboard.putNumber("Right Back",  RobotMap.rBMaster.getSelectedSensorPosition(0));
- 
-
-    SmartDashboard.putNumber("Left Front Velocity", RobotMap.lFMaster.getSelectedSensorVelocity(0));
-    // SmartDashboard.putNumber("Right Front Velocity",  RobotMap.rFMaster.getSelectedSensorVelocity(0));
-    // SmartDashboard.putNumber("Left Back Velocity", RobotMap.lBMaster.getSelectedSensorVelocity(0));
-    // SmartDashboard.putNumber("Right Back Velocity",  RobotMap.rBMaster.getSelectedSensorVelocity(0));
-
-    SmartDashboard.putNumber("Left Front Voltage", RobotMap.lFMaster.getMotorOutputVoltage());
-    // SmartDashboard.putNumber("Right Front Voltage",  RobotMap.rFMaster.getMotorOutputVoltage());
-    // SmartDashboard.putNumber("Left Back Voltage", RobotMap.lBMaster.getMotorOutputVoltage());
-    // SmartDashboard.putNumber("Right Back Voltage",  RobotMap.rBMaster.getMotorOutputVoltage());
-
-    SmartDashboard.putNumber("Left Front Current", RobotMap.lFMaster.getOutputCurrent());
- //   SmartDashboard.putNumber("Right Front Current", RobotMap.rFMaster.getOutputCurrent());
- //   SmartDashboard.putNumber("Left Back Current", RobotMap.lBMaster.getOutputCurrent());
- //   SmartDashboard.putNumber("Right Back Current", RobotMap.rBMaster.getOutputCurrent());
-    SmartDashboard.putNumber("test", 50);
-    double current =  RobotMap.lFMaster.getOutputCurrent();
-    double velocity = RobotMap.lFMaster.getSelectedSensorVelocity(0);
-    double ratio = 0;
-    if(current != 0)
-      ratio = Math.abs(velocity /current);
-    SmartDashboard.putNumber("Ratio", ratio);
-
-    SmartDashboard.putNumber("Ultrasonic", RobotMap.utltrasonic.getValue());
-    /* If Talon is in position closed-loop, print some more info */
-  
-  //  SmartDashboard.putString("Line X", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineX").getDouble(0));
-  //  SmartDashboard.putString("Line Y", "" + NetworkTableInstance.getDefault().getTable("pi").getEntry("lineY").getDouble(0));
-    RobotMap.timer.reset();
-
-//    driveTrain.sigmoidDrive();
-    if(oi.j0.getRawButton(1)){
-   //   System.out.println("Stopping motor");
-   //   driveTrain.stopMotor(0);
-    }
-  //  independent.sigmoidDrive();
-
-  // driveTrain.tankDrive();
+    SmartDashboard.putNumber("VALUE TO ARDUINO", arudinoSend);
+    // int MAX_BYTES = 32;
+    // byte[] data = new byte[MAX_BYTES];//create a byte array to hold the incoming data
+		// RobotMap.arduino.read(4, MAX_BYTES, data);//use address 4 on i2c and store it in data
+    // String output = new String(data);//create a string from the byte array
+    // int stop = output.indexOf(""+ (char)255);
+    // output = output.substring(0, stop < 0 ? output.length() : stop);
+    // System.out.println("Data: " + output);
 
 
-      
   }
 
   /**

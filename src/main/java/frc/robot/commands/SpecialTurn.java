@@ -11,6 +11,7 @@ public class SpecialTurn extends Command
     private double rightSpeed;
     public SpecialTurn(double angle, double speed)
     {
+        requires(Robot.driveTrain);
         this.angle = angle;
         if(angle > 0)
         {
@@ -27,6 +28,7 @@ public class SpecialTurn extends Command
     @Override
     protected void initialize() {
         Robot.driveTrain.reset();
+        Robot.navX.reset();
     }
 
     @Override

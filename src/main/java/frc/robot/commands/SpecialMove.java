@@ -18,7 +18,7 @@ public class SpecialMove extends Command
         double rotations = (feet / (0.5 * Math.PI));
         this.distance = rotations * 1128;
         this.speed = speed;
- 
+        System.out.println("\n\nRunning Special\n\n");
     }
 
     protected void initialize() 
@@ -42,6 +42,7 @@ public class SpecialMove extends Command
         {
             speedReached = true;
             distanceToAccelerate = RobotMap.lFMaster.getSelectedSensorPosition(0) - startValue;
+            System.out.println("\n\nDistance: " + distanceToAccelerate + "\n\n");
         }
     }
     @Override

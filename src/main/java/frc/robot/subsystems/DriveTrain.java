@@ -7,15 +7,20 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj.command.Subsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.RobotMap;
 import frc.robot.commands.TankDrive;
 import frc.robot.Constants;
 import frc.robot.Robot;
 public class DriveTrain extends Subsystem
 {
-    WPI_TalonSRX[] motors = new WPI_TalonSRX[4];
+    public WPI_TalonSRX[] motors = new WPI_TalonSRX[4];
     private double[] desiredSpeeds;
     public double[] currentSpeeds;
+    
+    public boolean driveSet;
+    public boolean test;
+
     public DriveTrain()
     {
         motors[0] = RobotMap.lFMaster;
@@ -24,6 +29,8 @@ public class DriveTrain extends Subsystem
         motors[3] = RobotMap.rBMaster;
         reset();
         config();
+        driveSet = true;
+        test = false;
     }
 
     private void config()
@@ -121,6 +128,27 @@ public class DriveTrain extends Subsystem
         }
     }
 
+    public void set(double leftSpeed, double rightSpeed) 
+    {
+        currentSpeeds[0] = leftSpeed;
+        currentSpeeds[1] = rightSpeed;
+        leftSpeed = Math.copySign(leftSpeed * leftSpeed, leftSpeed);
+        rightSpeed = Math.copySign(rightSpeed * rightSpeed, rightSpeed);
+        // System.out.println("Set is being called");
+        // System.out.println("Test = " + test + "\n\n");
+        for (int i = 0; i < motors.length; i++) 
+        {
+            if(i == 3 && test)
+                motors[i].set(rightSpeed/2);
+            else if (i < motors.length / 2)
+                motors[i].set(leftSpeed);
+            else
+                motors[i].set(-rightSpeed);
+
+            motors[i].feed();
+        }
+    }
+
     public void stopMotor(int index)
     {
         motors[index].stopMotor();
@@ -140,7 +168,10 @@ public class DriveTrain extends Subsystem
     {
         double left = sigmoidSideMove(leftSpeed, false, a);
         double right = sigmoidSideMove(rightSpeed, true, a);
-        move(left, right);
+        if(driveSet)
+            set(left, right);
+        else
+            move(left, right);
     }
 
     private double sigmoidSideMove(double speed, boolean isRight, double a)
@@ -196,6 +227,7 @@ public class DriveTrain extends Subsystem
 
     public void move(double leftSpeed, double rightSpeed)
     {
+        System.out.println("Move is being called");
         RobotMap.driveTank.tankDrive(leftSpeed, rightSpeed);
         currentSpeeds[0] = leftSpeed;
         currentSpeeds[1] = rightSpeed;
@@ -205,5 +237,22 @@ public class DriveTrain extends Subsystem
     {
         reset();
         RobotMap.driveTank.stopMotor();
+    }
+
+
+    public void displayInfo() {
+        String[] names = { "Left Front Motor ", "Left Back Motor ",
+                            "Right Front Motor ", "Right Back Motor " };
+
+        for (int i = 0; i < motors.length; i++) {
+            SmartDashboard.putNumber(names[i] + "Encoder", motors[i].getSelectedSensorPosition());
+            SmartDashboard.putNumber(names[i] + "Velocity", motors[i].getSelectedSensorVelocity());
+            SmartDashboard.putNumber(names[i] + "Current", motors[i].getOutputCurrent());
+            SmartDashboard.putNumber(names[i] + "Voltage", motors[i].getMotorOutputVoltage());
+            SmartDashboard.putNumber(names[i] + "Percent", motors[i].getMotorOutputPercent());
+        }
+
+     //   SmartDashboard.putNumber("Left Velocity Average", average(false));
+     //   SmartDashboard.putNumber("Right Velocity Average", average(true));
     }
 }

@@ -18,16 +18,31 @@ import frc.robot.commands.*;
 public class OI {
   public Joystick j0;
   public Joystick j1;
+  public Joystick xbox0;
 
   public JoystickButton j1b8;
-
+  public JoystickButton j1b9;
+  public JoystickButton j1b12;
+  public JoystickButton j1b1;
+  public JoystickButton j1b2;
   public OI() {
     j0 = new Joystick(0);
     j1 = new Joystick(1);
+    xbox0 = new Joystick(2);
 
     j1b8 = new JoystickButton(j1, 8);
-    j1b8.whenPressed(new SpecialMove(0.3, 6));
+    j1b9 = new JoystickButton(j1, 9);
+    j1b12 = new JoystickButton(j1, 12);
+    
+    j1b1 = new JoystickButton(j1, 1);
+    j1b2 = new JoystickButton(j1, 2);
+    j1b1.whenPressed(new ArduinoSend());
+    j1b2.whenPressed(new ArduinoPrint());
+    j1b8.whenPressed(new AdjustCommand());
 
+    // j1b8.whenPressed(new SpecialMove(0.75, 10));
+    // j1b9.whenPressed(new SpecialTurn(90, 0.5));
+    // j1b12.whenPressed(new VisionCommandGroup(0.5));
   }
 
 }

@@ -15,10 +15,12 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.SPI;
 
 import edu.wpi.first.wpilibj.SpeedControllerGroup;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 
 /**
@@ -48,6 +50,8 @@ public class RobotMap {
   public static DifferentialDrive driveTank;
 
   public static Timer timer;
+
+  public static I2C arduino;
 
   public static AHRS ahrs;
   public static AnalogInput utltrasonic;
@@ -122,6 +126,8 @@ public class RobotMap {
     rightMaster = new SpeedControllerGroup(rFMaster, rBMaster);
 
     driveTank = new DifferentialDrive(leftMaster, rightMaster);
+
+    arduino = new I2C(Port.kOnboard, 4);
 
     ahrs = new AHRS(SPI.Port.kMXP);
     utltrasonic = new AnalogInput(3);
